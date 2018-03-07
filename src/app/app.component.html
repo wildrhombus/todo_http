@@ -1,0 +1,53 @@
+<mat-card class="todoapp">
+  <mat-toolbar color="primary">
+    Todo with Http
+    <button mat-fab class="fab-add tst__add" (click)="todoDialog()">
+      <mat-icon>add</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <mat-card-content>
+    <mat-table #table [dataSource]="dataSource">
+      <ng-container matColumnDef="title">
+        <mat-header-cell *matHeaderCellDef> Title </mat-header-cell>
+        <mat-cell *matCellDef="let todo" class='align-left'> {{todo.title}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="date">
+        <mat-header-cell *matHeaderCellDef> Date </mat-header-cell>
+        <mat-cell *matCellDef="let todo"> {{todo.date | date: 'dd/MM/yyyy'}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
+        <mat-cell *matCellDef="let todo"> {{todo.status}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+
+        <mat-cell *matCellDef="let todo">
+          <button mat-mini-fab (click)="removeTodo(todo)" color="primary" class="tst__delete">
+            <mat-icon>delete_forever</mat-icon>
+          </button>
+
+          <button mat-mini-fab (click)="todoDialog(todo)" color="primary"
+            [disabled]="todo.status === 'completed'" class="tst__edit">
+            <mat-icon>mode_edit</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </mat-card-content>
+</mat-card>
+
+<app-dialog [dialogTitle]=titleText
+            [okText]="okButtonText"
+            [todo]="editingTodo"
+            (formEmitted)="updateTodo($event)"
+            [showPrompt]="showDialog">
+</app-dialog>
+

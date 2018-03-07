@@ -1,0 +1,29 @@
+<div class="overlay" *ngIf="showPrompt">
+  Date is {{ date }}
+  <mat-card class="modalDialog">
+    <mat-toolbar color="primary">
+      {{dialogTitle}}
+    </mat-toolbar>
+    <mat-card-content>
+      <br/><br/>
+      <form [formGroup]="todoForm">
+        <mat-form-field class="full-width">
+          <input matInput formControlName="title" placeholder="Enter a todo"
+               class="tst__title"/>
+          <span *ngIf="!todoForm.get('title').valid && todoForm.get('title').touched">Please enter a todo</span>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <input matInput formControlName="date" [matDatepicker]="picker" placeholder="Completion date" class="tst__date">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker touchUi="true" #picker></mat-datepicker>
+          <span *ngIf="!todoForm.get('date').valid && todoForm.get('date').touched">Please enter a completion date</span>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+    <mat-card-actions class="center">
+      <button type="reset" mat-button (click)="emitValue(null)" color="primary" class="tst__cancel">{{cancelText}}</button>
+      <button mat-raised-button type="submit"
+        [disabled]="!todoForm.valid" (click)="emitValue(todoForm.value)" color="primary" class="tst__ok">{{okText}}</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

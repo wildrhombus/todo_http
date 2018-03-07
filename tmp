@@ -1,0 +1,16 @@
+./.angular-cli.json
+./README.md
+./package-lock.json
+./package.json
+./e2e/app.e2e-spec.ts
+./src/index.html
+./src/app/app.component.html
+./src/app/app.component.spec.ts
+./src/app/app.module.ts
+./src/app/dialog/dialog.component.spec.ts
+./src/app/app.component.css
+./src/app/modules/material.module.ts
+./src/app/coverage/lcov.info
+./src/app/coverage/src/app/modules/index.html
+./src/app/coverage/src/app/modules/material.module.ts.html
+./src/styles.css
