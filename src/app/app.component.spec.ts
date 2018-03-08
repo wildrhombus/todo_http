@@ -120,7 +120,6 @@ describe('AppComponent', () => {
 
   describe('With todos', () => {
     let de_todo_rows:      DebugElement[];
-    let el_edit:      HTMLElement;
     let todoList: Todo[];
 
     beforeEach( fakeAsync(() => {
@@ -225,7 +224,6 @@ describe('AppComponent', () => {
 
         row_to_delete = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
         button_delete = row_to_delete.queryAll(By.css('.mat-column-actions button'))[0];
-        console.log('button delete', button_delete);
       });
 
 
@@ -241,7 +239,7 @@ describe('AppComponent', () => {
         discardPeriodicTasks();
       }));
 
-       it('should have one less todo row', fakeAsync( () => {
+      it('should have one less todo row', fakeAsync( () => {
 
         button_delete.triggerEventHandler('click', null);
         tick();
@@ -250,6 +248,63 @@ describe('AppComponent', () => {
         de_todo_rows = fixture.debugElement.queryAll(By.css('.mat-row')).map(de => de.nativeElement);
 
         expect(de_todo_rows.length).toEqual(2);
+        discardPeriodicTasks();
+      }));
+    });
+
+    describe('toggle todo status', () => {
+      let status_checkbox: HTMLElement;
+      let titleEl: HTMLElement;
+      let dateEl: HTMLElement;
+
+     beforeEach( () => {
+        de_todo_rows = fixture.debugElement.queryAll(By.css('.mat-row')).map(de => de.nativeElement);
+
+        let row_to_change = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
+        status_checkbox = row_to_change.query(By.css('.mat-column-title .mat-checkbox')).nativeElement;
+
+        titleEl = row_to_change.queryAll(By.css('.mat-column-title .mat-checkbox-label span'))[1].nativeElement;
+        dateEl = row_to_change.query(By.css('.mat-column-date span')).nativeElement;
+      });
+
+      it('should call toggleStatus', fakeAsync(() => {
+        spyOn(app, 'toggleStatus');
+
+        status_checkbox.click();
+        tick();
+        fixture.detectChanges();
+
+        expect(app.toggleStatus).toHaveBeenCalledWith(todoList[1]);
+
+        discardPeriodicTasks();
+      }));
+
+      it('should change status to completed', fakeAsync( () => {
+        status_checkbox.click();
+        tick();
+        fixture.detectChanges();
+
+        expect(titleEl.getAttribute('class')).toContain('completed');
+        expect(dateEl.getAttribute('class')).toContain('completed');
+
+        discardPeriodicTasks();
+      }));
+
+      it('should change status to pending', fakeAsync( () => {
+        status_checkbox.click();
+        tick();
+        fixture.detectChanges();
+
+        expect(titleEl.getAttribute('class')).toContain('completed');
+        expect(dateEl.getAttribute('class')).toContain('completed');
+
+        status_checkbox.click();
+        tick();
+        fixture.detectChanges();
+
+        expect(titleEl.getAttribute('class')).not.toContain('completed');
+        expect(dateEl.getAttribute('class')).not.toContain('completed');
+
         discardPeriodicTasks();
       }));
     });

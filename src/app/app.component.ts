@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   okButtonText: string = 'Create';
   titleText: string = 'New';
 
-  displayedColumns = ['title', 'date', 'status', 'actions'];
+  displayedColumns = ['title', 'date', 'actions'];
   todoDatabase: TodoDatabase;
   dataSource: TodoDataSource | null;
 
@@ -89,6 +89,11 @@ export class AppComponent implements OnInit {
 
   removeTodo(todo: Todo) {
     this.todoDatabase.removeTodo(todo);
+  }
+
+  toggleStatus(todo: Todo) {
+    todo.status = (todo.status === 'pending') ? 'completed' : 'pending';
+    this.todoDatabase.updateTodo(todo);
   }
 }
 

@@ -10,17 +10,18 @@
     <mat-table #table [dataSource]="dataSource">
       <ng-container matColumnDef="title">
         <mat-header-cell *matHeaderCellDef> Title </mat-header-cell>
-        <mat-cell *matCellDef="let todo" class='align-left'> {{todo.title}} </mat-cell>
+        <mat-cell *matCellDef="let todo" class='align-left'>
+          <mat-checkbox color="primary" type="checkbox" (click)="toggleStatus(todo)">
+            <span [class.completed]="todo.status === 'completed'">{{todo.title}}</span>
+          </mat-checkbox>
+        </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="date">
         <mat-header-cell *matHeaderCellDef> Date </mat-header-cell>
-        <mat-cell *matCellDef="let todo"> {{todo.date | date: 'dd/MM/yyyy'}} </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="status">
-        <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
-        <mat-cell *matCellDef="let todo"> {{todo.status}} </mat-cell>
+        <mat-cell *matCellDef="let todo">
+          <span [class.completed]="todo.status === 'completed'">{{todo.date | date: 'dd/MM/yyyy'}}</span>
+        </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="actions">
