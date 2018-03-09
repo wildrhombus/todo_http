@@ -1,4 +1,13 @@
-# TodoHttp
+## TodoHttp
+
+This is a simple todo app using material design.
+
+I wrote it to improve my angular/angular-material and testing skills.
+
+It uses the todo_http_node_app backend running on http://locahost:3000 for the http server.
+To change the base api, change the value in the app.config.ts file.
+
+The api endpoint used is http://localhost:3000/api/todos.
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.6.8.
 
