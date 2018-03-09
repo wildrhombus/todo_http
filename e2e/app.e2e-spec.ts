@@ -27,17 +27,18 @@ describe('material-app App', () => {
     expect(page.toolbarText()).toContain('Todo with Http');
   });
 
-  it('should have 0 todos', () => {
-    expect(page.todosCount()).toEqual(1);
-  });
-
   it('should have an add button', () => {
     expect(page.toolbarAdd()).toContain('add');
   });
 
   describe('Todo Create Actions', () => {
+    let startCount: number;
+
     beforeEach(() => {
-      page.addButton().click();
+      page.todosCount().then(size => {
+        startCount = size;
+        page.addButton().click();
+      });
     });
 
     it('should open a dialog for create', () => {
@@ -72,8 +73,8 @@ describe('material-app App', () => {
       page.dialogSaveButton().click();
 
       expect(page.appDialog().isDisplayed()).toBe(false);
-      expect(page.todosCount()).toEqual(2);
-      expect(page.secondTodo()).toContain('First Todo');
+      expect(page.todosCount()).toEqual(startCount + 1);
+      expect(page.todoText(startCount)).toContain('First Todo');
     });
 
     it('should cancel dialog', () => {
@@ -85,11 +86,23 @@ describe('material-app App', () => {
       page.dialogCancelButton().click();
 
       expect(page.appDialog().isDisplayed()).toBe(false);
-      expect(page.todosCount()).toEqual(1);
+      expect(page.todosCount()).toEqual(startCount);
     });
   });
 
   describe('Existing Todo Actions', () => {
+    let startCount: number;
+    let origTitle: string;
+
+    beforeEach(() => {
+      page.todosCount().then(size => {
+        startCount = size;
+        page.firstTitle().then( title => {
+          origTitle = title;
+        });
+      });
+    });
+
     it('should open dialog for edit', () => {
       browser.actions().mouseMove(element.all(by.css('.mat-row')).first()).perform().then(() => {
         let editButton = page.editButton();
@@ -98,7 +111,7 @@ describe('material-app App', () => {
         editButton.click().then(() => {
           expect(page.appDialog().isDisplayed()).toBe(true);
           expect(page.dialogTitle()).toContain('Edit Task');
-          expect(page.titleInputValue()).toEqual('test todo');
+          expect(page.titleInputValue()).toEqual(origTitle);
           expect(page.dialogSaveButton().getText()).toContain('Save');
         });
       });
@@ -115,8 +128,8 @@ describe('material-app App', () => {
           page.dialogSaveButton().click();
 
           expect(page.appDialog().isDisplayed()).toBe(false);
-          expect(page.todosCount()).toEqual(1);
-          expect(page.firstTodo()).toContain('First Todo Edited');
+          expect(page.todosCount()).toEqual(startCount);
+          expect(page.firstTitle()).toContain('First Todo Edited');
         });
       });
     });
@@ -127,7 +140,7 @@ describe('material-app App', () => {
         expect(deleteButton.isDisplayed()).toBe(true);
 
         deleteButton.click().then(() => {
-          expect(page.todosCount()).toEqual(0);
+          expect(page.todosCount()).toEqual(startCount - 1);
         });
       });
     });

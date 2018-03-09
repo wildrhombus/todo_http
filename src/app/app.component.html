@@ -11,7 +11,7 @@
       <ng-container matColumnDef="title">
         <mat-header-cell *matHeaderCellDef> Title </mat-header-cell>
         <mat-cell *matCellDef="let todo" class='align-left'>
-          <mat-checkbox color="primary" type="checkbox" (click)="toggleStatus(todo)">
+          <mat-checkbox color="primary" type="checkbox" [checked]="todo.status === 'completed'" (click)="toggleStatus(todo)">
             <span [class.completed]="todo.status === 'completed'">{{todo.title}}</span>
           </mat-checkbox>
         </mat-cell>

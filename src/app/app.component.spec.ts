@@ -1,8 +1,11 @@
-import { async, fakeAsync, tick, ComponentFixture, TestBed, discardPeriodicTasks } from '@angular/core/testing';
+import { async, fakeAsync, tick, ComponentFixture, TestBed, getTestBed } from '@angular/core/testing';
 import { By }              from '@angular/platform-browser';
 import { DebugElement }    from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/of';
 
 import { AppComponent, TodoDatabase, TodoDataSource } from './app.component';
 import { DialogComponent } from './dialog/dialog.component';
@@ -10,18 +13,18 @@ import { MaterialModule } from './modules/material.module';
 
 import { HttpClientModule } from '@angular/common/http';
 
-import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
-import { InMemoryDataService }  from './models/in-memory-data.service';
-
 import { Todo } from './models/todo.model';
 import { TodoService } from './services/todo.service';
-
+import { FakeTodoService } from './services/testing/fake-todo.service';
 
 describe('AppComponent', () => {
   let app: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
 
   beforeEach(async(() => {
+    let injector;
+    let todoService: TodoService;
+
     TestBed.configureTestingModule({
       declarations: [
         AppComponent,
@@ -32,14 +35,15 @@ describe('AppComponent', () => {
         MaterialModule,
         FormsModule,
         ReactiveFormsModule,
-
-        HttpClientModule,
-        HttpClientInMemoryWebApiModule.forRoot(
-          InMemoryDataService, { dataEncapsulation: false }
-        )
       ],
-    providers: [TodoService],
+    providers: [
+      TodoService,
+      { provide: TodoService, useClass: FakeTodoService }
+    ],
     }).compileComponents();
+
+    injector = getTestBed();
+    todoService = injector.get(TodoService);
   }));
 
   beforeEach( () => {
@@ -75,7 +79,6 @@ describe('AppComponent', () => {
       fixture.detectChanges();
 
       expect(app.todoDialog).toHaveBeenCalledWith();
-      discardPeriodicTasks();
     }));
 
     it('should show the dialog component initialized as a Create input', fakeAsync(() => {
@@ -86,7 +89,6 @@ describe('AppComponent', () => {
       expect(app.showDialog).toBeTruthy;
       expect(app.editingTodo).toBeNull;
       expect(app.okButtonText).toEqual('Create');
-      discardPeriodicTasks();
     }));
   });
 
@@ -106,11 +108,10 @@ describe('AppComponent', () => {
       fixture.detectChanges();
 
       de_todo_rows = fixture.debugElement.queryAll(By.css('.mat-row')).map(de => de.nativeElement);
-      discardPeriodicTasks();
     }));
 
     it('should have a todo list', () => {
-      expect(de_todo_rows.length).toBe(0);
+      expect(de_todo_rows.length).toBe(2);
     });
 
     it('should close the dialog', () => {
@@ -125,12 +126,12 @@ describe('AppComponent', () => {
     beforeEach( fakeAsync(() => {
       fixture.detectChanges();
 
-      todoList = [{id: 0, title: 'first todo', date: new Date(), status: 'pending'}, {id: 0, title: 'second todo', date: new Date(), status: 'pending'}];
-      app.todoDatabase.dataChange.next(todoList);
+      app.todoDatabase.addTodo({title: 'second todo', date: new Date(), status: 'pending'});
       fixture.detectChanges();
 
+      todoList = app.todoDatabase.dataChange.value;
+
       de_todo_rows = fixture.debugElement.queryAll(By.css('.mat-row')).map(de => de.nativeElement);
-      discardPeriodicTasks();
     }));
 
     it('should have a todo list', () => {
@@ -142,7 +143,7 @@ describe('AppComponent', () => {
       let title: string = first_row.query(By.css('.mat-column-title')).nativeElement.textContent;
       let actions: DebugElement[] = first_row.queryAll(By.css('.mat-column-actions button'));
 
-      expect( title).toContain('first todo');
+      expect( title).toContain('test todo');
       expect( actions.length ).toEqual(2);
       expect( actions[0].nativeElement.textContent).toContain('delete_forever');
       expect( actions[1].nativeElement.textContent).toContain('mode_edit');
@@ -165,7 +166,6 @@ describe('AppComponent', () => {
         fixture.detectChanges();
 
         expect(app.todoDialog).toHaveBeenCalledWith(todoList[0]);
-        discardPeriodicTasks();
       }));
 
       it('should show the dialog component initialized as a Edit input', fakeAsync( () => {
@@ -176,7 +176,6 @@ describe('AppComponent', () => {
         expect(app.showDialog).toBeTruthy;
         expect(app.editingTodo).toEqual(todoList[0]);
         expect(app.okButtonText).toEqual('Save');
-        discardPeriodicTasks();
       }));
     });
 
@@ -195,7 +194,6 @@ describe('AppComponent', () => {
         fixture.detectChanges();
 
         de_todo_rows = fixture.debugElement.queryAll(By.css('.mat-row')).map(de => de.nativeElement);
-        discardPeriodicTasks();
       }));
 
       it('should have a todo list', () => {
@@ -226,7 +224,6 @@ describe('AppComponent', () => {
         button_delete = row_to_delete.queryAll(By.css('.mat-column-actions button'))[0];
       });
 
-
       it('should call remove todo', fakeAsync(() => {
         spyOn(app, 'removeTodo');
 
@@ -235,8 +232,6 @@ describe('AppComponent', () => {
         fixture.detectChanges();
 
         expect(app.removeTodo).toHaveBeenCalledWith(todoList[1]);
-
-        discardPeriodicTasks();
       }));
 
       it('should have one less todo row', fakeAsync( () => {
@@ -247,12 +242,12 @@ describe('AppComponent', () => {
 
         de_todo_rows = fixture.debugElement.queryAll(By.css('.mat-row')).map(de => de.nativeElement);
 
-        expect(de_todo_rows.length).toEqual(2);
-        discardPeriodicTasks();
+        expect(de_todo_rows.length).toEqual(1);
       }));
     });
 
     describe('toggle todo status', () => {
+      let row_to_change: DebugElement;
       let status_checkbox: HTMLElement;
       let titleEl: HTMLElement;
       let dateEl: HTMLElement;
@@ -260,11 +255,8 @@ describe('AppComponent', () => {
      beforeEach( () => {
         de_todo_rows = fixture.debugElement.queryAll(By.css('.mat-row')).map(de => de.nativeElement);
 
-        let row_to_change = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
+        row_to_change = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
         status_checkbox = row_to_change.query(By.css('.mat-column-title .mat-checkbox')).nativeElement;
-
-        titleEl = row_to_change.queryAll(By.css('.mat-column-title .mat-checkbox-label span'))[1].nativeElement;
-        dateEl = row_to_change.query(By.css('.mat-column-date span')).nativeElement;
       });
 
       it('should call toggleStatus', fakeAsync(() => {
@@ -275,8 +267,6 @@ describe('AppComponent', () => {
         fixture.detectChanges();
 
         expect(app.toggleStatus).toHaveBeenCalledWith(todoList[1]);
-
-        discardPeriodicTasks();
       }));
 
       it('should change status to completed', fakeAsync( () => {
@@ -284,10 +274,11 @@ describe('AppComponent', () => {
         tick();
         fixture.detectChanges();
 
+        row_to_change = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
+        titleEl = row_to_change.queryAll(By.css('.mat-column-title .mat-checkbox-label span'))[1].nativeElement;
+        dateEl = row_to_change.query(By.css('.mat-column-date span')).nativeElement;
         expect(titleEl.getAttribute('class')).toContain('completed');
         expect(dateEl.getAttribute('class')).toContain('completed');
-
-        discardPeriodicTasks();
       }));
 
       it('should change status to pending', fakeAsync( () => {
@@ -295,17 +286,22 @@ describe('AppComponent', () => {
         tick();
         fixture.detectChanges();
 
+        row_to_change = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
+        titleEl = row_to_change.queryAll(By.css('.mat-column-title .mat-checkbox-label span'))[1].nativeElement;
+        dateEl = row_to_change.query(By.css('.mat-column-date span')).nativeElement;
         expect(titleEl.getAttribute('class')).toContain('completed');
         expect(dateEl.getAttribute('class')).toContain('completed');
 
+        status_checkbox = row_to_change.query(By.css('.mat-column-title .mat-checkbox')).nativeElement;
         status_checkbox.click();
         tick();
         fixture.detectChanges();
 
+        row_to_change = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
+        titleEl = row_to_change.queryAll(By.css('.mat-column-title .mat-checkbox-label span'))[1].nativeElement;
+        dateEl = row_to_change.query(By.css('.mat-column-date span')).nativeElement;
         expect(titleEl.getAttribute('class')).not.toContain('completed');
         expect(dateEl.getAttribute('class')).not.toContain('completed');
-
-        discardPeriodicTasks();
       }));
     });
   });

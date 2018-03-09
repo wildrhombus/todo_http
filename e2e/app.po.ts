@@ -17,12 +17,12 @@ export class AppPage {
     return this.todos().count()
   }
 
-  firstTodo() {
-    return this.todos().first().getText();
+  firstTitle() {
+    return element.all(by.css('.mat-row')).first().element(by.css('.mat-column-title')).getText();
   }
 
-  secondTodo() {
-    return this.todos().get(1).getText();
+  todoText(index) {
+    return this.todos().get(index).getText()
   }
 
   toolbarText() {

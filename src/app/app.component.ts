@@ -75,8 +75,7 @@ export class AppComponent implements OnInit {
       todo.title = todo.title.trim();
 
       if (this.editingTodo.title !== '') {
-        this.editingTodo.title = todo.title;
-        this.editingTodo.date = todo.date;
+        Object.assign(this.editingTodo, todo);
 
         this.editTodo();
       } else {
@@ -92,29 +91,39 @@ export class AppComponent implements OnInit {
   }
 
   toggleStatus(todo: Todo) {
-    todo.status = (todo.status === 'pending') ? 'completed' : 'pending';
-    this.todoDatabase.updateTodo(todo);
+    Object.assign(this.editingTodo, todo);
+    this.editingTodo.status = (todo.status === 'pending') ? 'completed' : 'pending';
+
+    this.todoDatabase.updateTodo(this.editingTodo);
   }
 }
 
+/* Created Database using examples from Angular Material2 */
+/* This is good for a simple example */
 export class TodoDatabase {
-/** Stream that emits whenever the data has been modified. */
+/* TODO: better error handling */
+
   dataChange: BehaviorSubject<Todo[]> = new BehaviorSubject<Todo[]>([]);
   get data(): Todo[] { return this.dataChange.value; }
 
-  constructor(private _todoService: TodoService) {
-    this._todoService.getTodos().subscribe(todos => {
-      this.dataChange.next(todos);
+  constructor(private todoService: TodoService) {
+    this.todoService.getTodos().subscribe(todos => {
+      if (todos) {
+        this.dataChange.next(todos);
+      }
     })
   }
 
   /** Adds a new todo to the database. */
   addTodo(todo: any) {
     const copiedData = this.data.slice();
-    this._todoService.addTodo(todo as Todo)
-      .subscribe(todo => {
-        copiedData.push(todo);
-        this.dataChange.next(copiedData);
+
+    this.todoService.addTodo(todo as Todo)
+      .subscribe(result => {
+        if (result) {
+          copiedData.push(todo);
+          this.dataChange.next(copiedData);
+        }
       });
   }
 
@@ -122,9 +131,13 @@ export class TodoDatabase {
   updateTodo(todo: Todo) {
     const copiedData = this.data.slice();
 
-    this._todoService.updateTodo(todo)
+    this.todoService.updateTodo(todo)
       .subscribe(result => {
-        this.dataChange.next(copiedData);
+        if (result) {
+          let index = copiedData.findIndex(result => result.id === todo.id);
+          copiedData.splice(index, 1, result);
+          this.dataChange.next(copiedData);
+        }
       });
   }
 
@@ -132,9 +145,12 @@ export class TodoDatabase {
   removeTodo(todo: Todo) {
     const copiedData = this.data.slice().filter(t => t !== todo);
 
-    this._todoService.deleteTodo(todo)
-      .subscribe(result => {
-        this.dataChange.next(copiedData);
+    this.todoService.deleteTodo(todo)
+      .subscribe(
+        result => {
+          if (result !== undefined) {
+            this.dataChange.next(copiedData);
+          }
       });
   }
 }

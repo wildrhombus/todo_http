@@ -6,6 +6,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
+import { APP_CONFIG, AppConfig, TODO_CONFIG } from '../app.config';
 import { Todo } from '../models/todo.model';
 
 export const TODOS: Todo[] = [];
@@ -14,6 +15,21 @@ const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json'})
 };
 
+export class TodoApiResponse {
+  data: {
+    _id: string;
+    title: string;
+    date: string;
+    status: string;
+  }
+}
+
+export class TodosApiResponse {
+  data: {
+    docs:TodoApiResponse[];
+  };
+}
+
 @Injectable()
 export class TodoService {
 
@@ -21,10 +37,7 @@ export class TodoService {
     private http: HttpClient
   ) { }
 
-  readonly todosUrl = 'api/todos';  // URL to web api
-
-  dataChange: BehaviorSubject<Todo[]> = new BehaviorSubject<Todo[]>([]);
-
+  todosUrl = TODO_CONFIG.apiEndpoint + 'api/todos';  // URL to web api
 
   /** Log a HeroService message, TBD, add a decent logger */
   private log(message: string) {
@@ -49,46 +62,59 @@ export class TodoService {
     }
   }
 
+  /* The server data stores id as _id, rename to work with client object */
+  private mapTodo(data: any): Todo {
+    return {
+      id: data._id,
+      title: data.title,
+      date: data.date,
+      status: data.status
+     }
+  }
 
-  /* List all todos. */
-  getTodos (): Observable<Todo[]> {
-    return this.http.get<Todo[]>(this.todosUrl)
+  getTodos () {
+    return this.http.get<TodosApiResponse>(this.todosUrl)
       .pipe(
         catchError(this.handleError('getTodos', []))
-      );
+      ).map( (response: TodosApiResponse) => {
+        return response.data.docs.map(row => {
+          return this.mapTodo(row);
+        });
+      });
   }
 
-
-  /** GET todo by id. Will 404 if id not found */
-  getTodo(id: number): Observable<Todo> {
-    const url = `${this.todosUrl}/${id}`;
-    return this.http.get<Todo>(url).pipe(
-      tap(_ => this.log(`fetched todo id=${id}`)),
-      catchError(this.handleError<Todo>(`getTodo id=${id}`))
-    );
-  }
-
-  /** POST: add a new hero to the server */
-  addTodo (todo: Todo): Observable<Todo> {
-    return this.http.post<Todo>(this.todosUrl, todo, httpOptions).pipe(
-      tap((todo: Todo) => this.log(`added todo w/ id=${todo.id}`)),
+  addTodo (todo: Todo) {
+    return this.http.post<TodoApiResponse>(this.todosUrl, todo, httpOptions).pipe(
       catchError(this.handleError<Todo>('addTodo'))
-    );
+    ).map( (response: TodoApiResponse) => {
+      this.log(`created todo id=${response.data._id}`);
+      return this.mapTodo(response.data);
+    });
   }
 
-  /** PUT: update the hero on the server */
-  updateTodo (todo: Todo): Observable<any> {
-    return this.http.put(this.todosUrl, todo, httpOptions).pipe(
-      tap(_ => this.log(`updated todo id=${todo.id}`)),
+  updateTodo (todo: Todo) {
+    let request = {
+      _id: todo.id,
+      title: todo.title,
+      date: todo.date,
+      status: todo.status
+    };
+
+    return this.http.put<TodoApiResponse>(this.todosUrl, request, httpOptions).pipe(
+      tap(response => this.log(`updated todo id=${response.data._id}`)),
       catchError(this.handleError<any>('updateTodo'))
-    );
+    ).map( response => {
+      if( response ) {
+        return this.mapTodo(response.data);
+      }
+    });
   }
 
-  deleteTodo (todo: Todo | number): Observable<Todo> {
+  deleteTodo (todo: Todo | number) {
     const id = typeof todo === 'number' ? todo : todo.id;
     const url = `${this.todosUrl}/${id}`;
 
-    return this.http.delete<Todo>(url, httpOptions).pipe(
+    return this.http.delete(url, httpOptions).pipe(
       tap(_ => this.log(`deleted todo id=${id}`)),
       catchError(this.handleError<Todo>('deleteTodo'))
     );
