@@ -21,12 +21,12 @@ export class TodoApiResponse {
     title: string;
     date: string;
     status: string;
-  }
+  };
 }
 
 export class TodosApiResponse {
   data: {
-    docs:TodoApiResponse[];
+    docs: TodoApiResponse[];
   };
 }
 
@@ -40,7 +40,7 @@ export class TodoService {
   todosUrl = TODO_CONFIG.apiEndpoint + 'api/todos';  // URL to web api
 
   /** Log a HeroService message, TBD, add a decent logger */
-  private log(message: string) {
+  private _log(message: string) {
     console.log('TodoService: ' + message);
   }
 
@@ -50,50 +50,50 @@ export class TodoService {
    * @param operation - name the operation that failed
    * @param result - optional value to return as the observable result
    */
-  private handleError<T> (operation = 'operation', result?: T) {
+  private _handleError<T> (operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       // TODO: send the error to remote logging infrastructure
       console.error(error);
 
       // TODO: better job of transforming error for user consuption
-      this.log(`${operation} failed: ${error.message}`);
+      this._log(`${operation} failed: ${error.message}`);
 
       return of(result as T);
-    }
+    };
   }
 
   /* The server data stores id as _id, rename to work with client object */
-  private mapTodo(data: any): Todo {
+  private _mapTodo(data: any): Todo {
     return {
       id: data._id,
       title: data.title,
       date: data.date,
       status: data.status
-     }
+     };
   }
 
   getTodos () {
     return this.http.get<TodosApiResponse>(this.todosUrl)
       .pipe(
-        catchError(this.handleError('getTodos', []))
+        catchError(this._handleError('getTodos', []))
       ).map( (response: TodosApiResponse) => {
         return response.data.docs.map(row => {
-          return this.mapTodo(row);
+          return this._mapTodo(row);
         });
       });
   }
 
   addTodo (todo: Todo) {
     return this.http.post<TodoApiResponse>(this.todosUrl, todo, httpOptions).pipe(
-      catchError(this.handleError<Todo>('addTodo'))
+      catchError(this._handleError<Todo>('addTodo'))
     ).map( (response: TodoApiResponse) => {
-      this.log(`created todo id=${response.data._id}`);
-      return this.mapTodo(response.data);
+      this._log(`created todo id=${response.data._id}`);
+      return this._mapTodo(response.data);
     });
   }
 
   updateTodo (todo: Todo) {
-    let request = {
+    const request = {
       _id: todo.id,
       title: todo.title,
       date: todo.date,
@@ -101,11 +101,11 @@ export class TodoService {
     };
 
     return this.http.put<TodoApiResponse>(this.todosUrl, request, httpOptions).pipe(
-      tap(response => this.log(`updated todo id=${response.data._id}`)),
-      catchError(this.handleError<any>('updateTodo'))
+      tap(response => this._log(`updated todo id=${response.data._id}`)),
+      catchError(this._handleError<any>('updateTodo'))
     ).map( response => {
-      if( response ) {
-        return this.mapTodo(response.data);
+      if (response) {
+        return this._mapTodo(response.data);
       }
     });
   }
@@ -115,8 +115,8 @@ export class TodoService {
     const url = `${this.todosUrl}/${id}`;
 
     return this.http.delete(url, httpOptions).pipe(
-      tap(_ => this.log(`deleted todo id=${id}`)),
-      catchError(this.handleError<Todo>('deleteTodo'))
+      tap(_ => this._log(`deleted todo id=${id}`)),
+      catchError(this._handleError<Todo>('deleteTodo'))
     );
   }
 }

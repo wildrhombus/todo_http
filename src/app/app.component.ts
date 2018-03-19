@@ -19,37 +19,37 @@ import { TodoService } from './services/todo.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  editingTodo: any;
-
-  showDialog: boolean = false;
-  okButtonText: string = 'Create';
-  titleText: string = 'New';
+  dataSource: TodoDataSource | null;
+  todoDatabase: TodoDatabase;
 
   displayedColumns = ['title', 'date', 'actions'];
-  todoDatabase: TodoDatabase;
-  dataSource: TodoDataSource | null;
 
-  constructor(private _todoService: TodoService){}
+  editingTodo: any;
+  showDialog = false;
+  okButtonText = 'Create';
+  titleText = 'New';
+
+  constructor(private _todoService: TodoService) {}
 
   ngOnInit() {
     this.todoDatabase = new TodoDatabase(this._todoService);
     this.dataSource = new TodoDataSource(this.todoDatabase);
-    this.emptyEditingTodo();
+    this._emptyEditingTodo();
   }
 
-  private hideDialog() {
+  private _hideDialog() {
     this.showDialog = false;
   }
 
-  private emptyEditingTodo() {
+  private _emptyEditingTodo() {
     this.editingTodo = { title: '', date: '' };
   }
 
-  private editTodo(): void {
+  private _editTodo(): void {
     this.todoDatabase.updateTodo(this.editingTodo);
   }
 
-  private addTodo(todo: any): void {
+  private _addTodo(todo: any): void {
     if (!todo) {
       return;
     }
@@ -60,7 +60,7 @@ export class AppComponent implements OnInit {
   todoDialog(todo = null) {
     this.titleText = 'New Task';
     this.okButtonText = 'Create';
-    this.emptyEditingTodo();
+    this._emptyEditingTodo();
 
     if (todo) {
       this.editingTodo = todo;
@@ -76,14 +76,13 @@ export class AppComponent implements OnInit {
 
       if (this.editingTodo.title !== '') {
         Object.assign(this.editingTodo, todo);
-
-        this.editTodo();
+        this._editTodo();
       } else {
         todo.status = 'pending';
-        this.addTodo(todo);
+        this._addTodo(todo);
       }
     }
-    this.hideDialog();
+    this._hideDialog();
   }
 
   removeTodo(todo: Todo) {
@@ -99,26 +98,26 @@ export class AppComponent implements OnInit {
 }
 
 /* Created Database using examples from Angular Material2 */
-/* This is good for a simple example */
+/* I'm not entirely sure if this is the best approach as it */
+/* as it duplicates the functions in the service.  */
 export class TodoDatabase {
 /* TODO: better error handling */
 
   dataChange: BehaviorSubject<Todo[]> = new BehaviorSubject<Todo[]>([]);
   get data(): Todo[] { return this.dataChange.value; }
 
-  constructor(private todoService: TodoService) {
-    this.todoService.getTodos().subscribe(todos => {
+  constructor(private _todoService: TodoService) {
+    this._todoService.getTodos().subscribe(todos => {
       if (todos) {
         this.dataChange.next(todos);
       }
-    })
+    });
   }
 
-  /** Adds a new todo to the database. */
   addTodo(todo: any) {
     const copiedData = this.data.slice();
 
-    this.todoService.addTodo(todo as Todo)
+    this._todoService.addTodo(todo as Todo)
       .subscribe(result => {
         if (result) {
           copiedData.push(todo);
@@ -127,25 +126,23 @@ export class TodoDatabase {
       });
   }
 
-  /** Updates an existing todo. */
   updateTodo(todo: Todo) {
     const copiedData = this.data.slice();
 
-    this.todoService.updateTodo(todo)
+    this._todoService.updateTodo(todo)
       .subscribe(result => {
         if (result) {
-          let index = copiedData.findIndex(result => result.id === todo.id);
+          const index = copiedData.findIndex(idx => idx.id === todo.id);
           copiedData.splice(index, 1, result);
           this.dataChange.next(copiedData);
         }
       });
   }
 
-  /** Remove a todo */
   removeTodo(todo: Todo) {
     const copiedData = this.data.slice().filter(t => t !== todo);
 
-    this.todoService.deleteTodo(todo)
+    this._todoService.deleteTodo(todo)
       .subscribe(
         result => {
           if (result !== undefined) {

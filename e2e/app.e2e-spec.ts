@@ -1,7 +1,7 @@
 import { AppPage } from './app.po';
 import { browser, by, element, protractor } from 'protractor';
 
-var EC = protractor.ExpectedConditions;
+let EC = protractor.ExpectedConditions;
 
 describe('material-app App', () => {
   let page: AppPage;
@@ -13,7 +13,7 @@ describe('material-app App', () => {
 }
 
   beforeEach(() => {
-    browser.get("http://localhost:4200");
+    browser.get('http://localhost:4200');
 
     page = new AppPage();
     page.navigateTo();
@@ -105,7 +105,7 @@ describe('material-app App', () => {
 
     it('should open dialog for edit', () => {
       browser.actions().mouseMove(element.all(by.css('.mat-row')).first()).perform().then(() => {
-        let editButton = page.editButton();
+        const editButton = page.editButton();
         expect(editButton.isDisplayed()).toBe(true);
 
         editButton.click().then(() => {
@@ -120,7 +120,7 @@ describe('material-app App', () => {
     it('should edit todo item', () => {
       browser.actions().mouseMove(element.all(by.css('.mat-row')).first()).perform().then(() => {
         page.editButton().click().then(() => {
-          let inputValue = page.titleElement();
+          const inputValue = page.titleElement();
 
           page.titleElement().sendKeys('');
           page.titleElement().sendKeys('First Todo Edited');
@@ -136,7 +136,7 @@ describe('material-app App', () => {
 
     it('should remove todo item', () => {
       browser.actions().mouseMove(page.todo()).perform().then(() => {
-        let deleteButton = page.deleteButton();
+        const deleteButton = page.deleteButton();
         expect(deleteButton.isDisplayed()).toBe(true);
 
         deleteButton.click().then(() => {

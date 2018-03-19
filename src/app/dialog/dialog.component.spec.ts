@@ -1,6 +1,6 @@
 import { async, fakeAsync, tick, ComponentFixture, TestBed } from '@angular/core/testing';
-import { By }              from '@angular/platform-browser';
-import { DebugElement }    from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { DebugElement } from '@angular/core';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -15,10 +15,6 @@ describe('DialogComponent', () => {
   let el_cancel:      HTMLElement;
   let de_ok:      DebugElement;
   let el_ok:      HTMLElement;
-  let de_title:   DebugElement;
-  let el_title:   HTMLInputElement;
-  let de_date:   DebugElement;
-  let el_date:   HTMLInputElement;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({

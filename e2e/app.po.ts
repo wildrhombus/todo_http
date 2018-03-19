@@ -14,7 +14,7 @@ export class AppPage {
   }
 
   todosCount() {
-    return this.todos().count()
+    return this.todos().count();
   }
 
   firstTitle() {
@@ -22,7 +22,7 @@ export class AppPage {
   }
 
   todoText(index) {
-    return this.todos().get(index).getText()
+    return this.todos().get(index).getText();
   }
 
   toolbarText() {

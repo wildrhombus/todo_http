@@ -1,6 +1,6 @@
 import { async, fakeAsync, tick, ComponentFixture, TestBed, getTestBed } from '@angular/core/testing';
-import { By }              from '@angular/platform-browser';
-import { DebugElement }    from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { DebugElement } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -51,7 +51,7 @@ describe('AppComponent', () => {
     app = fixture.componentInstance;
   });
 
-  it('should create the app',() => {
+  it('should create the app', () => {
     expect(app).toBeTruthy();
   });
 
@@ -98,8 +98,8 @@ describe('AppComponent', () => {
     beforeEach( fakeAsync(() => {
       fixture.detectChanges();
 
-      let newtodo: Todo = new Todo();
-      newtodo.title = "new title";
+      const newtodo: Todo = new Todo();
+      newtodo.title = 'new title';
       newtodo.date = new Date();
 
       app.showDialog = true;
@@ -139,9 +139,9 @@ describe('AppComponent', () => {
     });
 
     it('should have a completed todo row', () => {
-      let first_row: DebugElement = fixture.debugElement.queryAll(By.css('.mat-row'))[0];
-      let title: string = first_row.query(By.css('.mat-column-title')).nativeElement.textContent;
-      let actions: DebugElement[] = first_row.queryAll(By.css('.mat-column-actions button'));
+      const first_row: DebugElement = fixture.debugElement.queryAll(By.css('.mat-row'))[0];
+      const title: string = first_row.query(By.css('.mat-column-title')).nativeElement.textContent;
+      const actions: DebugElement[] = first_row.queryAll(By.css('.mat-column-actions button'));
 
       expect( title).toContain('test todo');
       expect( actions.length ).toEqual(2);
@@ -187,8 +187,8 @@ describe('AppComponent', () => {
         app.editingTodo = todoList[1];
         app.showDialog = true;
 
-        let newtodo: Todo = Object.assign({}, app.editingTodo);
-        newtodo.title = "new title";
+        const newtodo: Todo = Object.assign({}, app.editingTodo);
+        newtodo.title = 'new title';
 
         app.updateTodo(newtodo);
         fixture.detectChanges();
@@ -206,8 +206,8 @@ describe('AppComponent', () => {
       });
 
       it('should have changed the title', () => {
-        let edited_row: DebugElement = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
-        let title: string = edited_row.query(By.css('.mat-column-title')).nativeElement.textContent;
+        const edited_row: DebugElement = fixture.debugElement.queryAll(By.css('.mat-row'))[1];
+        const title: string = edited_row.query(By.css('.mat-column-title')).nativeElement.textContent;
 
         expect(title).not.toEqual(origTitle);
       });

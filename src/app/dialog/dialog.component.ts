@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators ,FormsModule, NgForm } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, Validators, FormsModule, NgForm } from '@angular/forms';
 import { SimpleChanges } from '@angular/core';
 
 import { Todo } from '../models/todo.model';
@@ -32,7 +32,7 @@ export class DialogComponent {
   constructor() {
     this.okText = 'OK';
     this.cancelText = 'Cancel';
-    this.dialogTitle = "New Task";
+    this.dialogTitle = 'New Task';
 
     this.fb = new FormBuilder;
   }

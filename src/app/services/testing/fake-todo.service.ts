@@ -2,10 +2,10 @@ import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
 // re-export for tester convenience
-export { Todo }        from '../../models/todo.model';
+export { Todo } from '../../models/todo.model';
 export { TodoService } from '../todo.service';
 
-import { Todo }        from '../../models/todo.model';
+import { Todo } from '../../models/todo.model';
 import { TodoService } from '../todo.service';
 
 
@@ -22,7 +22,7 @@ export class FakeTodoService {
     if (typeof id === 'string') {
       id = parseInt(id as string, 10);
     }
-    let todo = this.todos.find(t => t.id === id);
+    const todo = this.todos.find(t => t.id === id);
     return todo;
   }
 
@@ -30,7 +30,7 @@ export class FakeTodoService {
     if (typeof id === 'string') {
       id = parseInt(id as string, 10);
     }
-    let index = this.todos.findIndex(t => t.id === id);
+    const index = this.todos.findIndex(t => t.id === id);
     return index;
   }
 
@@ -38,7 +38,7 @@ export class FakeTodoService {
     return Observable.of(this.todos);
   }
 
-  addTodo(todo: Todo):Observable<Todo> {
+  addTodo(todo: Todo): Observable<Todo> {
     const [last] = this.todos.slice(-1);
     todo.id = last.id + 1;
     this.todos.push(Object.assign({}, todo));
@@ -47,8 +47,8 @@ export class FakeTodoService {
   }
 
   updateTodo(todo: Todo) {
-    let origTodo = this.getTodo(todo.id);
-    origTodo.title =todo.title;
+    const origTodo = this.getTodo(todo.id);
+    origTodo.title = todo.title;
     origTodo.date = todo.date;
     origTodo.status = todo.status;
 
@@ -56,8 +56,8 @@ export class FakeTodoService {
   }
 
   deleteTodo(todo: Todo) {
-    let todoIndex = this.getTodoIndex(todo.id);
-    if( todoIndex > -1) {
+    const todoIndex = this.getTodoIndex(todo.id);
+    if (todoIndex > -1) {
       this.todos.splice(todoIndex, 1);
       return(Observable.of(null));
     }
